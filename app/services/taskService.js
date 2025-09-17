@@ -1,19 +1,32 @@
+// services/taskService.js
+import * as api from "../utils/api";
 
-export async function fetchTasks() {
-  return [
-    { id: 1, taskName: "Design Homepage", status: "In Progress", assignee: "John Doe" },
-    { id: 2, taskName: "API Setup", status: "Pending", assignee: "Jane Smith" }
-  ];
+// Tasks CRUD
+export function fetchTasks() {
+  return api.get("tasks");
 }
 
-export async function addTask(task) {
-  return { ...task, id: Date.now() }; // later → POST request
+export function addTask(task) {
+  return api.post("tasks", task);
 }
 
-export async function updateTask(id, updates) {
-  return { id, ...updates }; // later → PATCH request
+export function updateTask(id, updates) {
+  return api.patch(`tasks/${id}`, updates);
 }
 
-export async function deleteTask(id) {
-  return true; // later → DELETE request
+export function deleteTask(id) {
+  return api.del(`tasks/${id}`);
+}
+
+// Dropdowns
+export function fetchStatuses() {
+  return api.get("statuses");
+}
+
+export function fetchPriorities() {
+  return api.get("priorities");
+}
+
+export function fetchTaskTypes() {
+  return api.get("task-types");
 }

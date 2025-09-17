@@ -1,33 +1,32 @@
 "use client";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 
 export default function Table({ columns, data, onUpdate }) {
   const [editingCell, setEditingCell] = useState(null); // {rowIndex, accessor}
   const [editValue, setEditValue] = useState("");
 
-  const handleDoubleClick = (rowIndex, accessor, currentValue) => {
+  const handleClick = (rowIndex, accessor, currentValue) => {
     setEditingCell({ rowIndex, accessor });
-    setEditValue(currentValue);
+    setEditValue(currentValue ?? "");
   };
 
   const handleBlur = () => {
     if (editingCell) {
-      onUpdate(editingCell.rowIndex, editingCell.accessor, editValue);
+      const { rowIndex, accessor } = editingCell;
+      onUpdate(rowIndex, accessor, editValue);
       setEditingCell(null);
     }
   };
 
   const handleKeyDown = (e) => {
-    if (e.key === "Enter") {
-      handleBlur();
-    } else if (e.key === "Escape") {
-      setEditingCell(null);
-    }
+    if (e.key === "Enter") handleBlur();
+    else if (e.key === "Escape") setEditingCell(null);
   };
 
-    // render special inputs based on column type
-  const renderInput = (col, value) => {
-    const safeValue = editValue ?? ""; // always fallback to empty string
+  const renderInput = (col) => {
+    const safeValue = editValue ?? "";
+    const baseClasses =
+      "w-full px-1 py-0.5 text-sm border border-blue-400 rounded focus:outline-none";
 
     if (col.accessor === "status") {
       return (
@@ -36,7 +35,7 @@ export default function Table({ columns, data, onUpdate }) {
           onChange={(e) => setEditValue(e.target.value)}
           onBlur={handleBlur}
           autoFocus
-          className="w-full border rounded px-2 py-1 text-sm focus:outline-none"
+          className={baseClasses}
         >
           <option value="Pending">Pending</option>
           <option value="In Progress">In Progress</option>
@@ -52,7 +51,7 @@ export default function Table({ columns, data, onUpdate }) {
           onChange={(e) => setEditValue(e.target.value)}
           onBlur={handleBlur}
           autoFocus
-          className="w-full border rounded px-2 py-1 text-sm focus:outline-none"
+          className={baseClasses}
         >
           <option value="Low">Low</option>
           <option value="Medium">Medium</option>
@@ -69,20 +68,31 @@ export default function Table({ columns, data, onUpdate }) {
           onChange={(e) => setEditValue(e.target.value)}
           onBlur={handleBlur}
           autoFocus
-          className="w-full border rounded px-2 py-1 text-sm focus:outline-none"
+          className={baseClasses}
         />
       );
     }
 
     if (col.accessor === "description") {
+      const textareaRef = useRef(null);
+
+      useEffect(() => {
+        if (textareaRef.current) {
+          textareaRef.current.style.height = "auto";
+          textareaRef.current.style.height =
+            textareaRef.current.scrollHeight + "px";
+        }
+      }, [editValue]);
+
       return (
         <textarea
+          ref={textareaRef}
           value={safeValue}
           onChange={(e) => setEditValue(e.target.value)}
           onBlur={handleBlur}
           autoFocus
-          className="w-full border rounded px-2 py-1 text-sm focus:outline-none resize-none"
-          rows={2}
+          className={`${baseClasses} resize-none overflow-hidden`}
+          rows={1}
         />
       );
     }
@@ -96,11 +106,10 @@ export default function Table({ columns, data, onUpdate }) {
         onBlur={handleBlur}
         onKeyDown={handleKeyDown}
         autoFocus
-        className="w-full border rounded px-2 py-1 text-sm focus:outline-none"
+        className={baseClasses}
       />
     );
   };
-
 
   return (
     <div className="overflow-x-auto">
@@ -129,18 +138,26 @@ export default function Table({ columns, data, onUpdate }) {
                   return (
                     <td
                       key={colIndex}
-                      className="border border-gray-300 px-4 py-2 text-sm text-gray-800"
-                      onDoubleClick={() =>
-                        handleDoubleClick(
-                          rowIndex,
-                          col.accessor,
-                          row[col.accessor]
-                        )
+                      className="border border-gray-300 px-4 py-2 text-sm text-gray-800 relative group"
+                      onClick={() =>
+                        handleClick(rowIndex, col.accessor, row[col.accessor])
                       }
                     >
-                      {isEditing
-                        ? renderInput(col, row[col.accessor])
-                        : row[col.accessor]}
+                      <span
+                        className={`block ${
+                          !isEditing
+                            ? "group-hover:bg-gray-100 cursor-pointer"
+                            : ""
+                        }`}
+                      >
+                        {row[col.accessor]}
+                      </span>
+
+                      {isEditing && (
+                        <div className="absolute inset-0 z-10 flex items-center px-1 bg-white">
+                          {renderInput(col)}
+                        </div>
+                      )}
                     </td>
                   );
                 })}

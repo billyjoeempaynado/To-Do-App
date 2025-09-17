@@ -10,10 +10,17 @@
   },
   "dependencies": {
     "@tailwindcss/postcss": "^4.1.13",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.2",
+    "express": "^5.1.0",
     "framer-motion": "^12.23.12",
     "next": "15.5.3",
+    "pg": "^8.16.3",
+    "pg-hstore": "^2.3.4",
     "react": "19.1.0",
     "react-dom": "19.1.0",
+    "sequelize": "^6.37.7",
+    "sequelize-cli": "^6.6.3",
     "tailwindcss": "^4.1.13"
   },
   "devDependencies": {
